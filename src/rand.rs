@@ -256,6 +256,30 @@ mod sysrand_chunk {
     }
 }
 
+#[cfg(all(
+    target_os = "emscripten",
+    target_env = "",
+))]
+mod sysrand_chunk {
+    extern crate std;
+    use std::os::unix::fs::OpenOptionsExt;
+    use std::io::Read;
+    use std::fs::{OpenOptions};
+    use crate::error;
+
+    pub fn chunk(dest: &mut [u8]) -> Result<usize, error::Unspecified> {
+        let mut file = OpenOptions::new()
+                        .read(true)
+                        .custom_flags(libc::O_NONBLOCK)
+                        .open("/dev/random")
+                        .map_err(|_| error::Unspecified)?;
+
+        let _ = file.read(&mut dest[..1]).map_err(|_| error::Unspecified)?;
+
+        Ok(dest.len())
+    }
+}
+
 #[cfg(windows)]
 mod sysrand_chunk {
     use crate::{error, polyfill};
