@@ -262,7 +262,6 @@ mod sysrand_chunk {
 ))]
 mod sysrand_chunk {
     extern crate std;
-    use std::os::unix::fs::OpenOptionsExt;
     use std::io::Read;
     use std::fs::{OpenOptions};
     use crate::error;
@@ -270,7 +269,6 @@ mod sysrand_chunk {
     pub fn chunk(dest: &mut [u8]) -> Result<usize, error::Unspecified> {
         let mut file = OpenOptions::new()
                         .read(true)
-                        .custom_flags(libc::O_NONBLOCK)
                         .open("/dev/random")
                         .map_err(|_| error::Unspecified)?;
 
